@@ -26,7 +26,8 @@ app.post('/submit-form', async (req, res) => {
 
     try {
         await storeFormData(formData);
-        res.send('Form data saved successfully!');
+        // res.send('Form data saved successfully!');
+        res.status(200).send('Form data saved successfully!');
     } catch (err) {
         console.error('Error saving form data:', err);
         res.status(500).send('Failed to save form data.');
