@@ -2,23 +2,25 @@
 
 const express = require('express');
 const app = express();
+app.use(express.json());
 const port = process.env.PORT || 3000;
 require("dotenv").config();
-const storeFormData = require("./logic/storeFormData.js");
+const { storeFormData, validateFormData } = require("./logic/storeFormData.js");
 
 app.get('/', async(req, res) => {
-    const formData = {
-        jobName: "Sample Job 2",
-        customerName: "POER Corporation",
-        materialID: ["mat021", "mat022", "mat023"],
-        materialName: ["Cardboard", "Glossy Paper", "Plastic"],
-        printType: "Black and White",
-        printCustomerName: true,
-        printCustomText: false,
-        customText: "Normal Delivery",
-        designNotes: "Please handle with care; print on the largest side.",
-        finalCheck: true,
-    };
+    res.send("This is a backend server for the next-form-app.");
+});
+
+app.post('/submit-form', async (req, res) => {
+    const formData = req.body;
+
+    // Basic validation function
+    const isValid = validateFormData(formData);
+    if (!isValid) {
+        return res.status(400).send('Invalid form data.');
+    } else {
+        console.log("Form data validation success.");
+    }
 
     try {
         await storeFormData(formData);
@@ -28,6 +30,7 @@ app.get('/', async(req, res) => {
         res.status(500).send('Failed to save form data.');
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

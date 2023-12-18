@@ -18,6 +18,11 @@ const formDataSchema = new mongoose.Schema({
 
 const FormData = mongoose.model("FormData", formDataSchema);
 
+function validateFormData(data) {
+    const requiredFields = ['jobName', 'customerName', 'materialID', 'materialName', 'printType', 'printCustomerName', 'printCustomText', 'customText', 'designNotes', 'finalCheck'];
+    return requiredFields.every(field => data.hasOwnProperty(field) && data[field] !== undefined);
+}
+
 async function storeFormData(formData) {
     try {
         // Establish a connection to the database
@@ -40,4 +45,7 @@ async function storeFormData(formData) {
     }
 }
 
-module.exports = storeFormData;
+module.exports = {
+    storeFormData,
+    validateFormData
+};
