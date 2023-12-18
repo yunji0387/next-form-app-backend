@@ -13,13 +13,12 @@ const formDataSchema = new mongoose.Schema({
     printCustomText: Boolean,
     customText: String,
     designNotes: String,
-    finalCheck: Boolean,
 });
 
 const FormData = mongoose.model("FormData", formDataSchema);
 
 function validateFormData(data) {
-    const requiredFields = ['jobName', 'customerName', 'materialID', 'materialName', 'printType', 'printCustomerName', 'printCustomText', 'customText', 'designNotes', 'finalCheck'];
+    const requiredFields = ['jobName', 'customerName', 'materialID', 'materialName', 'printType', 'printCustomerName', 'printCustomText', 'customText', 'designNotes'];
     return requiredFields.every(field => data.hasOwnProperty(field) && data[field] !== undefined);
 }
 
