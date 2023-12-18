@@ -4,7 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 app.use(cors({
-    origin: 'https://next-form-app-pi.vercel.app/form'
+    origin: 'https://next-form-app-pi.vercel.app'
 }));
 app.use(express.json());
 const port = process.env.PORT || 3000;
