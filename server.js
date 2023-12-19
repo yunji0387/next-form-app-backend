@@ -3,15 +3,17 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+
 app.use(cors({
-    origin: 'https://next-form-app-pi.vercel.app'
+    origin: '*'
 }));
+
 app.use(express.json());
 const port = process.env.PORT || 3000;
 require("dotenv").config();
 const { storeFormData, validateFormData } = require("./logic/storeFormData.js");
 
-app.get('/', async(req, res) => {
+app.get('/', async (req, res) => {
     res.send("This is a backend server for the next-form-app.");
 });
 
