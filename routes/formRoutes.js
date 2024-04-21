@@ -7,7 +7,8 @@ const {
     createForm,
     readAllForms,
     readFormById,
-    updateFormById
+    updateFormById,
+    deleteFormById
 } = require('../controllers/formController');
 
 
@@ -18,5 +19,7 @@ router.get('/', readAllForms);
 router.get('/:id', readFormById);
 
 router.put('/:id', updateFormById);
+
+router.delete('/:id', deleteFormById);
 
 module.exports = router;

@@ -74,3 +74,19 @@ exports.updateFormById = async (req, res) => {
         res.status(500).json({ message: 'Failed to update form data.', error: error.message });
     }
 };
+
+exports.deleteFormById = async (req, res) => {
+    const { id } = req.params;  // Get the ID from the request URL parameter
+    const formId = Number(id);
+
+    try {
+        const result = await FormData.findOneAndDelete({ formId: formId });
+        if (!result) {
+            return res.status(404).json({ message: "Form not found" });
+        }
+        res.status(200).json({ message: "Form deleted successfully" });
+    } catch (error) {
+        console.error('Error deleting form:', error);
+        res.status(500).json({ message: 'Failed to delete form data.', error: error.message });
+    }
+};
