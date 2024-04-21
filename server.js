@@ -10,8 +10,10 @@ app.use(cors({
 app.use(express.json());
 require("dotenv").config();
 
+const dbUrl = process.env.NODE_ENV === 'test' ? process.env.MONGO_TEST_DB_URI : process.env.MONGO_DB_URI;
+
 // MongoDB connection without deprecated options
-mongoose.connect(process.env.MONGO_DB_URI)
+mongoose.connect(dbUrl)
     .then(() => console.log('MongoDB Connected Successfully'))
     .catch(err => console.error('MongoDB connection error:', err));
 

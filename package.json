@@ -2,9 +2,10 @@
   "name": "next-form-app-backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon server.js",
+    "test": "cross-env NODE_ENV=test mocha --timeout 10000 --exit"
   },
   "author": "",
   "license": "ISC",
@@ -16,7 +17,8 @@
   },
   "devDependencies": {
     "chai": "^5.1.0",
-    "chai-http": "^4.4.0",
-    "mocha": "^10.4.0"
+    "cross-env": "^7.0.3",
+    "mocha": "^10.4.0",
+    "supertest": "^6.3.4"
   }
 }
