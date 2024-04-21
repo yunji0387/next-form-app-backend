@@ -4,11 +4,14 @@ const router = express.Router();
 
 
 const {
-    createForm
+    createForm,
+    readFormById
 } = require('../controllers/formController');
 
 
 router.post('/', createForm);
+
+router.get('/:id', readFormById);
 
 
 module.exports = router;
