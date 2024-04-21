@@ -25,6 +25,16 @@ exports.createForm = async (req, res) => {
     }
 };
 
+exports.readAllForms = async (req, res) => {
+    try {
+        const forms = await FormData.find({});  // Use Mongoose's find method to retrieve all documents
+        res.status(200).json(forms);
+    } catch (error) {
+        console.error('Error retrieving all forms:', error);
+        res.status(500).json({ message: 'Failed to retrieve all form data.', error: error.message });
+    }
+};
+
 exports.readFormById = async (req, res) => {
     const { id } = req.params;  // Get the ID from the request URL parameter
     const  formId = Number(id);
