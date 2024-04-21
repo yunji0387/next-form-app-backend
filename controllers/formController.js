@@ -7,7 +7,7 @@ exports.createForm = async (req, res) => {
     session.startTransaction();
     try {
         const { formData } = req.body;
-        console.log('Received form data:',formData);
+        console.log('Received form data:', formData);
         const newForm = new FormData(formData);  // Assuming formData should not be nested under 'formData'
 
         // Perform the save operation within a transaction
@@ -37,7 +37,7 @@ exports.readAllForms = async (req, res) => {
 
 exports.readFormById = async (req, res) => {
     const { id } = req.params;  // Get the ID from the request URL parameter
-    const  formId = Number(id);
+    const formId = Number(id);
 
     try {
         const form = await FormData.findOne({ formId: formId });
@@ -48,5 +48,29 @@ exports.readFormById = async (req, res) => {
     } catch (error) {
         console.error('Error retrieving form:', error);
         res.status(500).json({ message: 'Failed to retrieve form data.', error: error.message });
+    }
+};
+
+exports.updateFormById = async (req, res) => {
+    const { id } = req.params;  // Get the ID from the request URL parameter
+    const updateData = req.body;  // Get the updated data from the request body
+    const formId = Number(id);
+    try {
+        const form = await FormData.findOne({ formId: formId }); // Find the form by ID
+        if (!form) {
+            return res.status(404).json({ message: "Form not found" });
+        }
+
+        // Update the fields of the form
+        Object.keys(updateData).forEach(key => {
+            form[key] = updateData[key];
+        });
+
+        // Save the updated form
+        const updatedForm = await form.save();
+        res.status(200).json({ message: 'Form updated successfully.', form: updatedForm });
+    } catch (error) {
+        console.error('Error updating form:', error);
+        res.status(500).json({ message: 'Failed to update form data.', error: error.message });
     }
 };

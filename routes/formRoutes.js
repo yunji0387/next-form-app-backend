@@ -6,7 +6,8 @@ const router = express.Router();
 const {
     createForm,
     readAllForms,
-    readFormById
+    readFormById,
+    updateFormById
 } = require('../controllers/formController');
 
 
@@ -16,5 +17,6 @@ router.get('/', readAllForms);
 
 router.get('/:id', readFormById);
 
+router.put('/:id', updateFormById);
 
 module.exports = router;
