@@ -15,7 +15,8 @@ const FormSchema = new mongoose.Schema({
 });
 
 FormSchema.pre('save', async function (next) {
-    if (this.isNew) {  // Ensure this logic only applies to new documents
+    // Check if formId is not set or not within the reserved testing range
+    if (this.isNew && (this.formId === undefined || this.formId > 10)) {
         const update = await Counter.findByIdAndUpdate('formData', { $inc: { seq: 1 } }, { new: true, upsert: true });
         this.formId = update.seq;
     }
