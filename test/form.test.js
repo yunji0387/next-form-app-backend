@@ -18,161 +18,170 @@ before(async () => {
     expect = chai.expect;
 });
 
-describe('Form Data Server Normal Cases', () => {
-    let createdForm, response;
+describe('Form CRUD Operations', function () {
     const testFormId = 1;
+    const formData = {
+        formData: {
+            jobName: "Initial Job",
+            customerName: "Initial Customer",
+            materialID: ["001", "002"],
+            materialName: ["Paper", "Plastic"],
+            printType: "Digital",
+            printCustomerName: false,
+            printCustomText: false,
+            customText: "",
+            designNotes: "Initial notes",
+            formId: testFormId
+        }
+    };
 
-    before(async () => {
-        // Connect to the test database
-        await mongoose.connect(process.env.MONGO_TEST_DB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
-
-        // Optional: Clean up the database before running tests
-        await mongoose.model('Form').deleteMany({});
-
-        // Create a test form before all tests
-        response = await request.post('/forms')
-            .send({
-                formData: {
-                    jobName: "Test Job",
-                    customerName: "Test Customer",
-                    materialID: ["001", "002"],
-                    materialName: ["Paper", "Plastic"],
-                    printType: "Digital",
-                    printCustomerName: true,
-                    printCustomText: true,
-                    customText: "Test Text",
-                    designNotes: "No specific notes",
-                    formId: testFormId
-                }
-            });
-        createdForm = response.body.form; // Store the created form for use in other tests
+    before(async function () {
+        // Connect and clean the database once before all tests run
+        await mongoose.connection.collections.forms.deleteMany({});
     });
 
-    after(async () => {
-        // Clean up the database after all tests are done
-        await mongoose.model('Form').deleteMany({});
-
-        // Disconnect from the database
+    after(async function () {
+        // Optionally disconnect after all tests
+        await mongoose.connection.collections.forms.deleteMany({});
         await mongoose.disconnect();
     });
 
-    it('should confirm that the form has been created', async () => {
-        expect(response.status).to.equal(201);
-        expect(response.body.message).to.equal('Form data saved successfully.');
-        expect(createdForm).to.include({
-            jobName: "Test Job",
-            customerName: "Test Customer",
-            printType: "Digital",
-            printCustomerName: true,
-            printCustomText: true,
-            customText: "Test Text",
-            designNotes: "No specific notes"
+    describe('POST /forms', function () {
+        it('should create a form', async function () {
+            const res = await request.post('/forms').send(formData);
+            expect(res.status).to.equal(201);
+            expect(res.body.message).to.equal('Form data saved successfully.');
+            expect(res.body.form).to.include({
+                jobName: "Initial Job",
+                customerName: "Initial Customer",
+                printType: "Digital",
+                printCustomerName: false,
+                printCustomText: false,
+                customText: "",
+                designNotes: "Initial notes",
+            });
+            expect(res.body.form.materialID).to.deep.equal(["001", "002"]);
+            expect(res.body.form.materialName).to.deep.equal(["Paper", "Plastic"]);
+            expect(res.body.form.formId).to.equal(testFormId);
         });
-        expect(createdForm.materialID).to.deep.equal(["001", "002"]);
-        expect(createdForm.materialName).to.deep.equal(["Paper", "Plastic"]);
-        expect(createdForm.formId).to.equal(testFormId);
     });
 
-    // Additional tests here...
+    describe('GET /forms', function () {
+        it('should retrieve all forms', async function () {
+            const res = await request.get('/forms');
+            expect(res.status).to.equal(200);
+            expect(res.body).to.be.an('array');
+            expect(res.body).to.have.lengthOf(1);
+            expect(res.body[0]).to.include({
+                jobName: "Initial Job",
+                customerName: "Initial Customer",
+                printType: "Digital",
+                printCustomerName: false,
+                printCustomText: false,
+                customText: "",
+                designNotes: "Initial notes",
+            });
+        });
+
+        it('should return an empty array if no forms are found', async function () {
+            await mongoose.connection.collections.forms.deleteMany({});
+            const res = await request.get('/forms');
+            expect(res.status).to.equal(200);
+            expect(res.body).to.be.an('array');
+            expect(res.body).to.have.lengthOf(0);
+        });
+
+        it('should return an array of forms if multiple forms are found', async function () {
+            const formData2 = {
+                formData: {
+                    jobName: "Second Job",
+                    customerName: "Second Customer",
+                    materialID: ["003", "004"],
+                    materialName: ["Metal", "Wood"],
+                    printType: "Offset",
+                    printCustomerName: true,
+                    printCustomText: true,
+                    customText: "Custom Text",
+                    designNotes: "Second notes",
+                    formId: 2
+                }
+            };
+            await request.post('/forms').send(formData);
+            await request.post('/forms').send(formData2);
+            const res = await request.get('/forms');
+            expect(res.status).to.equal(200);
+            expect(res.body).to.be.an('array');
+            expect(res.body).to.have.lengthOf(2);
+            expect(res.body[1]).to.include({
+                jobName: "Second Job",
+                customerName: "Second Customer",
+                printType: "Offset",
+                printCustomerName: true,
+                printCustomText: true,
+                customText: "Custom Text",
+                designNotes: "Second notes",
+            });
+            expect(res.body[1].materialID).to.deep.equal(["003", "004"]);
+            expect(res.body[1].materialName).to.deep.equal(["Metal", "Wood"]);
+            expect(res.body[1].formId).to.equal(2);
+        });
+    });
+
+    describe('GET /forms/:id', function () {
+        it('should retrieve a specific form by its ID', async function () {
+            const res = await request.get(`/forms/${testFormId}`);
+            expect(res.status).to.equal(200);
+            expect(res.body.formId).to.equal(testFormId);
+        });
+
+        it('should return 404 for a non-existing form ID', async function () {
+            const res = await request.get('/forms/12345678');
+            expect(res.status).to.equal(404);
+        });
+    });
+
+    describe('PUT /forms/:id', function () {
+        it('should update an existing form', async function () {
+            const updateData = {
+                jobName: "Updated Job",
+                designNotes: "Updated notes"
+            };
+            const res = await request.put(`/forms/${testFormId}`).send(updateData);
+            expect(res.status).to.equal(200);
+            expect(res.body.message).to.equal('Form updated successfully.');
+            expect(res.body.form).to.include({
+                jobName: "Updated Job",
+                customerName: "Initial Customer",
+                printType: "Digital",
+                printCustomerName: false,
+                printCustomText: false,
+                customText: "",
+                designNotes: "Updated notes",
+            });
+            expect(res.body.form.materialID).to.deep.equal(["001", "002"]);
+            expect(res.body.form.materialName).to.deep.equal(["Paper", "Plastic"]);
+            expect(res.body.form.formId).to.equal(testFormId);
+        });
+
+        it('should return 404 for a non-existing form ID', async function () {
+            const res = await request.put('/forms/12345678');
+            expect(res.status).to.equal(404);
+            expect(res.body.message).to.equal('Form not found');
+        });
+    });
+
+    describe('DELETE /forms/:id', function () {
+        it('should delete a specific form', async function () {
+            const res = await request.delete(`/forms/${testFormId}`);
+            expect(res.status).to.equal(200);
+            const checkRes = await request.get(`/forms/${testFormId}`);
+            expect(checkRes.status).to.equal(404);
+        });
+
+        it('should return 404 for a non-existing form ID', async function () {
+            const res = await request.delete('/forms/12345678');
+            expect(res.status).to.equal(404);
+            expect(res.body.message).to.equal('Form not found');
+        });
+    });
 });
-
-
-// const supertest = require('supertest');
-// let chai;
-
-// before(async () => {
-//     chai = await import('chai');
-// });
-
-// const app = require('../server');
-// const request = supertest(app);
-
-// let expect;
-
-// before(async () => {
-//     const chai = await import('chai');
-//     expect = chai.expect;
-// });
-
-// describe('Form Data Server Normal Cases', () => {
-//     let createdForm, response;
-//     const testFormId = 1;
-
-//     before(async () => {
-//         // Create a test form before all tests
-//         response = await request.post('/forms')
-//             .send({
-//                 formData: {
-//                     jobName: "Test Job",
-//                     customerName: "Test Customer",
-//                     materialID: ["001", "002"],
-//                     materialName: ["Paper", "Plastic"],
-//                     printType: "Digital",
-//                     printCustomerName: true,
-//                     printCustomText: true,
-//                     customText: "Test Text",
-//                     designNotes: "No specific notes",
-//                     formId: testFormId
-//                 }
-//             });
-//         createdForm = response.body.form; // Store the created form for use in other tests
-//     });
-
-//     describe('POST /forms', () => {
-//         it('should confirm that the form has been created', () => {
-//             expect(response.status).to.equal(201);
-//             expect(response.body.message).to.equal('Form data saved successfully.');
-//             expect(createdForm).to.include({
-//                 jobName: "Test Job",
-//                 customerName: "Test Customer",
-//                 printType: "Digital",
-//                 printCustomerName: true,
-//                 printCustomText: true,
-//                 customText: "Test Text",
-//                 designNotes: "No specific notes"
-//             });
-//             expect(createdForm.materialID).to.deep.equal(["001", "002"]);
-//             expect(createdForm.materialName).to.deep.equal(["Paper", "Plastic"]);
-//             expect(createdForm.formId).to.equal(testFormId);
-//         });
-//     });
-
-//     // describe('GET /forms', () => {
-//     //     it('should retrieve all forms', async () => {
-//     //         const response = await request.get('/forms');
-//     //         expect(response.status).to.equal(200);
-//     //         expect(response.body).to.be.an('array');
-//     //         expect(response.body.length).to.be.at.least(1);
-//     //         expect(response.body.some(form => form.formId === testFormId)).to.be.true;
-//     //     });
-//     // });
-
-//     // describe('GET /forms/:id', () => {
-//     //     it('should retrieve a form by its ID', async () => {
-//     //         const response = await request.get(`/forms/${createdForm._id}`); // Assuming _id is returned and valid
-//     //         expect(response.status).to.equal(200);
-//     //         expect(response.body).to.be.an('object');
-//     //         expect(response.body.jobName).to.equal("Test Job");
-//     //     });
-
-//     //     it('should return 404 for a non-existing form ID', async () => {
-//     //         const response = await request.get('/forms/999999999'); // Assuming this ID does not exist
-//     //         expect(response.status).to.equal(404);
-//     //     });
-//     // });
-
-//     // describe('DELETE /forms/:id', () => {
-//     //     it('should delete a form given the ID', async () => {
-//     //         const deleteResponse = await request.delete(`/forms/${createdForm._id}`);
-//     //         expect(deleteResponse.status).to.equal(200);
-//     //         expect(deleteResponse.body.message).to.equal("Form deleted successfully");
-
-//     //         // Verify the form is no longer available
-//     //         const response = await request.get(`/forms/${createdForm._id}`);
-//     //         expect(response.status).to.equal(404);
-//     //     });
-//     // });
-// });
