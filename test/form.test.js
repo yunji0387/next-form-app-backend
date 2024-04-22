@@ -131,12 +131,24 @@ describe('Form CRUD Operations', function () {
         it('should retrieve a specific form by its ID', async function () {
             const res = await request.get(`/forms/${testFormId}`);
             expect(res.status).to.equal(200);
+            expect(res.body).to.include({
+                jobName: "Initial Job",
+                customerName: "Initial Customer",
+                printType: "Digital",
+                printCustomerName: false,
+                printCustomText: false,
+                customText: "",
+                designNotes: "Initial notes",
+            });
+            expect(res.body.materialID).to.deep.equal(["001", "002"]);
+            expect(res.body.materialName).to.deep.equal(["Paper", "Plastic"]);
             expect(res.body.formId).to.equal(testFormId);
         });
 
         it('should return 404 for a non-existing form ID', async function () {
             const res = await request.get('/forms/12345678');
             expect(res.status).to.equal(404);
+            expect(res.body.message).to.equal('Form not found');
         });
     });
 
