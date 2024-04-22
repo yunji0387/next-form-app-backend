@@ -6,7 +6,7 @@ exports.createForm = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const { formData } = req.body;
+        const formData = req.body;
         console.log('Received form data:', formData);
         const newForm = new FormData(formData);  // Assuming formData should not be nested under 'formData'
 

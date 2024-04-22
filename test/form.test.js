@@ -20,19 +20,31 @@ before(async () => {
 
 describe('Form CRUD Operations', function () {
     const testFormId = 1;
+    // const formData = {
+    //     formData: {
+    //         jobName: "Initial Job",
+    //         customerName: "Initial Customer",
+    //         materialID: ["001", "002"],
+    //         materialName: ["Paper", "Plastic"],
+    //         printType: "Digital",
+    //         printCustomerName: false,
+    //         printCustomText: false,
+    //         customText: "",
+    //         designNotes: "Initial notes",
+    //         formId: testFormId
+    //     }
+    // };
     const formData = {
-        formData: {
-            jobName: "Initial Job",
-            customerName: "Initial Customer",
-            materialID: ["001", "002"],
-            materialName: ["Paper", "Plastic"],
-            printType: "Digital",
-            printCustomerName: false,
-            printCustomText: false,
-            customText: "",
-            designNotes: "Initial notes",
-            formId: testFormId
-        }
+        jobName: "Initial Job",
+        customerName: "Initial Customer",
+        materialID: ["001", "002"],
+        materialName: ["Paper", "Plastic"],
+        printType: "Digital",
+        printCustomerName: false,
+        printCustomText: false,
+        customText: "",
+        designNotes: "Initial notes",
+        formId: testFormId
     };
 
     before(async function () {
@@ -92,19 +104,31 @@ describe('Form CRUD Operations', function () {
         });
 
         it('should return an array of forms if multiple forms are found', async function () {
+            // const formData2 = {
+            //     formData: {
+            //         jobName: "Second Job",
+            //         customerName: "Second Customer",
+            //         materialID: ["003", "004"],
+            //         materialName: ["Metal", "Wood"],
+            //         printType: "Offset",
+            //         printCustomerName: true,
+            //         printCustomText: true,
+            //         customText: "Custom Text",
+            //         designNotes: "Second notes",
+            //         formId: 2
+            //     }
+            // };
             const formData2 = {
-                formData: {
-                    jobName: "Second Job",
-                    customerName: "Second Customer",
-                    materialID: ["003", "004"],
-                    materialName: ["Metal", "Wood"],
-                    printType: "Offset",
-                    printCustomerName: true,
-                    printCustomText: true,
-                    customText: "Custom Text",
-                    designNotes: "Second notes",
-                    formId: 2
-                }
+                jobName: "Second Job",
+                customerName: "Second Customer",
+                materialID: ["003", "004"],
+                materialName: ["Metal", "Wood"],
+                printType: "Offset",
+                printCustomerName: true,
+                printCustomText: true,
+                customText: "Custom Text",
+                designNotes: "Second notes",
+                formId: 2
             };
             await request.post('/forms').send(formData);
             await request.post('/forms').send(formData2);
