@@ -45,3 +45,9 @@ To start the server, run:
 node server.js
 ```
 The server will start running on http://localhost:3000. You can make GET requests to the root URL to test the server.
+
+## Contributing
+- Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+- This project is licensed under the MIT License - see the [LICENSE.md](./LICENSE.md) file for details.
