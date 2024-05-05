@@ -24,7 +24,7 @@ This section guides you through submitting an enhancement suggestion, including 
 
 ### Your First Code Contribution
 
-Unsure where to begin contributing to Football League Standings Backend Server? You can start by looking through 'beginner' and 'help-wanted' issues:
+Unsure where to begin contributing to Next Form Data Backend Server? You can start by looking through 'beginner' and 'help-wanted' issues:
 
 - **Beginner issues** - issues that should only require a few lines of code, and a test or two.
 - **Help wanted issues** - issues that may need a bit more effort or knowledge about the project.
