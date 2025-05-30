@@ -34,10 +34,15 @@ cd [project directory]
 npm install
 ```
 
-4. Create a .env file in the project root and add your MongoDB URI:
-```bash
-MONGO_DB_URI=[your MongoDB URI]
-```
+4. Create a .env file in the project root and add:
+  - MongoDB URI:
+    ```bash
+    MONGO_DB_URI=[your MongoDB URI]
+    ```
+  - PORT:
+    ```bash
+    PORT=3000
+    ```
 
 ## Usage
 To start the server, run:
@@ -45,6 +50,28 @@ To start the server, run:
 node server.js
 ```
 The server will start running on http://localhost:3000. You can make GET requests to the root URL to test the server.
+
+---
+
+## Docker Setup
+
+You can also run this project using Docker:
+
+1. **Build the Docker image:**
+   ```bash
+   docker build -t next-form-app-backend .
+   ```
+
+2. **Run the Docker container:**
+   ```bash
+   docker run -p 3000:3000 --env-file .env next-form-app-backend
+   ```
+
+Make sure your `.env` file (with `MONGO_DB_URI=[your MongoDB URI]`) is present in the project root.
+
+The server will be accessible at [http://localhost:3000](http://localhost:3000).
+
+---
 
 ## Contributing
 - Please read [CONTRIBUTING.md](./CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
