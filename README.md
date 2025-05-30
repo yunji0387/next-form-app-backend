@@ -67,7 +67,7 @@ You can also run this project using Docker:
    docker run -p 3000:3000 --env-file .env next-form-app-backend
    ```
 
-Make sure your `.env` file (with `MONGO_DB_URI=[your MongoDB URI]`) is present in the project root.
+Make sure your `.env` file (with `MONGO_DB_URI=[your MongoDB URI]` and `PORT=3000`) is present in the project root.
 
 The server will be accessible at [http://localhost:3000](http://localhost:3000).
 
