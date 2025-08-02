@@ -1,15 +1,13 @@
-// form.test.js
-
 const supertest = require('supertest');
 const mongoose = require('mongoose');
+const { MongoMemoryServer } = require('mongodb-memory-server');
 let chai;
+let mongoServer;
+let app;
 
 before(async () => {
     chai = await import('chai');
 });
-
-const app = require('../server');  // Make sure your server exports the app correctly
-const request = supertest(app);
 
 let expect;
 
@@ -20,20 +18,6 @@ before(async () => {
 
 describe('Form CRUD Operations', function () {
     const testFormId = 1;
-    // const formData = {
-    //     formData: {
-    //         jobName: "Initial Job",
-    //         customerName: "Initial Customer",
-    //         materialID: ["001", "002"],
-    //         materialName: ["Paper", "Plastic"],
-    //         printType: "Digital",
-    //         printCustomerName: false,
-    //         printCustomText: false,
-    //         customText: "",
-    //         designNotes: "Initial notes",
-    //         formId: testFormId
-    //     }
-    // };
     const formData = {
         jobName: "Initial Job",
         customerName: "Initial Customer",
@@ -48,19 +32,37 @@ describe('Form CRUD Operations', function () {
     };
 
     before(async function () {
-        // Connect and clean the database once before all tests run
-        await mongoose.connection.collections.forms.deleteMany({});
+        // Start in-memory MongoDB
+        mongoServer = await MongoMemoryServer.create();
+        const mongoUri = mongoServer.getUri();
+        
+        // Close any existing connection
+        if (mongoose.connection.readyState !== 0) {
+            await mongoose.disconnect();
+        }
+        
+        // Connect to in-memory database
+        await mongoose.connect(mongoUri);
+        
+        // Now require the server after database is set up
+        app = require('../server');
+        
+        // Clean the database
+        try {
+            await mongoose.connection.collections.forms.deleteMany({});
+        } catch (error) {
+            // Collection might not exist yet, that's ok
+        }
     });
 
     after(async function () {
-        // Optionally disconnect after all tests
-        await mongoose.connection.collections.forms.deleteMany({});
         await mongoose.disconnect();
+        await mongoServer.stop();
     });
 
     describe('POST /forms', function () {
         it('should create a form', async function () {
-            const res = await request.post('/forms').send(formData);
+            const res = await supertest(app).post('/forms').send(formData);
             expect(res.status).to.equal(201);
             expect(res.body.message).to.equal('Form data saved successfully.');
             expect(res.body.form).to.include({
@@ -80,7 +82,7 @@ describe('Form CRUD Operations', function () {
 
     describe('GET /forms', function () {
         it('should retrieve all forms', async function () {
-            const res = await request.get('/forms');
+            const res = await supertest(app).get('/forms');
             expect(res.status).to.equal(200);
             expect(res.body).to.be.an('array');
             expect(res.body).to.have.lengthOf(1);
@@ -97,27 +99,13 @@ describe('Form CRUD Operations', function () {
 
         it('should return an empty array if no forms are found', async function () {
             await mongoose.connection.collections.forms.deleteMany({});
-            const res = await request.get('/forms');
+            const res = await supertest(app).get('/forms');
             expect(res.status).to.equal(200);
             expect(res.body).to.be.an('array');
             expect(res.body).to.have.lengthOf(0);
         });
 
         it('should return an array of forms if multiple forms are found', async function () {
-            // const formData2 = {
-            //     formData: {
-            //         jobName: "Second Job",
-            //         customerName: "Second Customer",
-            //         materialID: ["003", "004"],
-            //         materialName: ["Metal", "Wood"],
-            //         printType: "Offset",
-            //         printCustomerName: true,
-            //         printCustomText: true,
-            //         customText: "Custom Text",
-            //         designNotes: "Second notes",
-            //         formId: 2
-            //     }
-            // };
             const formData2 = {
                 jobName: "Second Job",
                 customerName: "Second Customer",
@@ -130,9 +118,9 @@ describe('Form CRUD Operations', function () {
                 designNotes: "Second notes",
                 formId: 2
             };
-            await request.post('/forms').send(formData);
-            await request.post('/forms').send(formData2);
-            const res = await request.get('/forms');
+            await supertest(app).post('/forms').send(formData);
+            await supertest(app).post('/forms').send(formData2);
+            const res = await supertest(app).get('/forms');
             expect(res.status).to.equal(200);
             expect(res.body).to.be.an('array');
             expect(res.body).to.have.lengthOf(2);
@@ -153,7 +141,7 @@ describe('Form CRUD Operations', function () {
 
     describe('GET /forms/:id', function () {
         it('should retrieve a specific form by its ID', async function () {
-            const res = await request.get(`/forms/${testFormId}`);
+            const res = await supertest(app).get(`/forms/${testFormId}`);
             expect(res.status).to.equal(200);
             expect(res.body).to.include({
                 jobName: "Initial Job",
@@ -170,7 +158,7 @@ describe('Form CRUD Operations', function () {
         });
 
         it('should return 404 for a non-existing form ID', async function () {
-            const res = await request.get('/forms/12345678');
+            const res = await supertest(app).get('/forms/12345678');
             expect(res.status).to.equal(404);
             expect(res.body.message).to.equal('Form not found');
         });
@@ -182,7 +170,7 @@ describe('Form CRUD Operations', function () {
                 jobName: "Updated Job",
                 designNotes: "Updated notes"
             };
-            const res = await request.put(`/forms/${testFormId}`).send(updateData);
+            const res = await supertest(app).put(`/forms/${testFormId}`).send(updateData);
             expect(res.status).to.equal(200);
             expect(res.body.message).to.equal('Form updated successfully.');
             expect(res.body.form).to.include({
@@ -200,7 +188,7 @@ describe('Form CRUD Operations', function () {
         });
 
         it('should return 404 for a non-existing form ID', async function () {
-            const res = await request.put('/forms/12345678');
+            const res = await supertest(app).put('/forms/12345678');
             expect(res.status).to.equal(404);
             expect(res.body.message).to.equal('Form not found');
         });
@@ -208,14 +196,14 @@ describe('Form CRUD Operations', function () {
 
     describe('DELETE /forms/:id', function () {
         it('should delete a specific form', async function () {
-            const res = await request.delete(`/forms/${testFormId}`);
+            const res = await supertest(app).delete(`/forms/${testFormId}`);
             expect(res.status).to.equal(200);
-            const checkRes = await request.get(`/forms/${testFormId}`);
+            const checkRes = await supertest(app).get(`/forms/${testFormId}`);
             expect(checkRes.status).to.equal(404);
         });
 
         it('should return 404 for a non-existing form ID', async function () {
-            const res = await request.delete('/forms/12345678');
+            const res = await supertest(app).delete('/forms/12345678');
             expect(res.status).to.equal(404);
             expect(res.body.message).to.equal('Form not found');
         });
